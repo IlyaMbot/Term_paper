@@ -38,8 +38,8 @@ def general_plot(time, time2, data, data2, pic_ind, index, aver):
     ax.set_title("Временной профиль (температура)", size = lsize * 1.5)
     ax.set_xlabel('Время, [$t_{\\frac{1}{2}}$]', size = lsize *1.2 )
     ax.set_ylabel('Температура, (нормированные значения)', size = lsize )
-    ax.annotate("Температура перехода = {:.2f}".format(pic_ind),xy = (4, 0.6), xytext = (4.5, 0.7), size = lsize)
-    ax.annotate("Стандартное отклонение (И+П) = {:.3f}".format(aver), xy = (4, 0.4), xytext = (3.5, 0.6), size = lsize)
+    ax.annotate("Температура перехода = {:.2f}".format(lim),xy = (4, 0.6), xytext = (4.5, 0.7), size = lsize)
+    ax.annotate("Стандартное отклонение (И) = {:.3f}\nСтандартное отклонение (Т) = {:.3f}".format(aver[0], aver[1]),xy = (4, 0.4), xytext = (4, 0.5), size = lsize)
     
 
     ax.axis([0, 11, -0.01, 1.01])
@@ -80,23 +80,14 @@ def normalize_t(data, time):
 
 
 
-def Ash_mod_fit(time, sigma, alpha):
-    
+def exp_mod(t, sigma):    
+    return( np.exp(( -(t)**2 )/ sigma) )
+
+def parab_mod(t, alpha):
+    global sig
     global lim
-    
-    Temp = []
-
-    for t in time:
-
-        T = np.exp(( -(t)**2 )/ sigma)
-        
-        if( T <= lim):
-            tp = np.sqrt(sigma * np.log(1/lim))
-            Temp.append(lim * (1 - (t - tp)/alpha)**(2))
-        else:
-            Temp.append(np.exp(( -(t)**2 )/ sigma))
-    
-    return( Temp )
+    tp = np.sqrt(sig * np.log(1/lim))
+    return( lim * (1 - (t - tp)/alpha)**(2) )
 
 def Ash_mod(t, sigma, alpha, lim):
 
@@ -125,48 +116,43 @@ for filename in filenames:
         
     maximum = int(np.argwhere(data == np.amax(data))[-1])
     
-    limits = np.arange(0.1 , 0.85, 0.01)
-
-    avers = []
-    parms = [[],[]]
+    limits = np.arange(0.1 , 1, 0.05)
 
     for lim in limits:
 
+        position = np.argwhere(data >= lim)
         pos_zero = np.argwhere(data >= 0)
 
+        pos_tp = int(position[-1])
         pos_zero = int(pos_zero[-1])
 
-        parm1, parm2 = cv(Ash_mod_fit, time[ maximum: -1 ], data[ maximum : -1])
-        #print(parm1)
-        parm2 = np.sqrt(np.diag(parm2))
-        #print(parm2)
+        aver = []
+        parm1, parm2 = cv(exp_mod, time[maximum:pos_tp], data[maximum:pos_tp])
+        aver.append(np.float(np.sqrt(np.diag(parm2))))
 
-        sigma = parm1[0]
-        alpha = parm1[1]
+        sig = parm1
 
-        aver = [parm2[0], parm2[1]]
-        avers.append(parm2[0]*2 + parm2[1])
-        parms[0].append(sigma)
-        parms[1].append(alpha)
-        print(lim)
+        parm3, parm4 = cv(parab_mod, time[pos_tp : pos_zero], data[pos_tp : pos_zero])
+        aver.append(np.float(np.sqrt(np.diag(parm4))))
+        print(aver)
 
-    position = int(np.argwhere(avers == np.amin(avers)))
-               
-    sigma = parms[0][position]
-    alpha = parms[1][position]
-    aver = avers[position]
-    te = sigma + alpha 
-
-    time2 = np.arange(0, 15 , 0.01)
-    model = []
-
-    for i in time2:
-        if (i < te):
-            model.append( Ash_mod(i, sigma, alpha, limits[position]))
-        else:
-            model.append(0)    
+        te = parm1 + parm3[0]
+       
         
     
-    general_plot(time2, time, model, data, limits[position], index, aver)
+        time2 = np.arange(0, 15 , 0.01)
+        
 
+        model = []
+
+        for i in time2:
+            if (i < te):
+                model.append( Ash_mod(i, parm1, parm3[0], lim))
+            else:
+                model.append(0)    
+
+
+        general_plot(time2, time, model, data, lim, index, aver)
+    
     index +=1
+        
