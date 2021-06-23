@@ -6,7 +6,7 @@ import glob
 import os
 
 
-filenames = glob.glob("./*.txt")
+filenames = glob.glob("data1.txt")
 filenames = sorted(filenames, key=os.path.basename)
 
 for filename in filenames:
@@ -17,5 +17,5 @@ for filename in filenames:
     for i in data:
         aver += i
     aver /= len(data)
-    print(filename, aver * 60)
+    print(filename, aver)
 
