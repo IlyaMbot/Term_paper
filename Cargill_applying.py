@@ -8,13 +8,6 @@ import scipy.io as scio
 import os, glob
 
 
-def file_read_column(path, number):
-
-    df = pd.read_table(path, header = None, names = ["time", "data"], sep = r"\s+" )
-    df = df.sort_values(by = "time")
-    data = df.iloc[:,number]
-    return(data.to_numpy())
-
 
 def general_plot(time, time2, data, data2, lim, aver, lim_time, index):
     lsize = 16
@@ -58,51 +51,6 @@ def general_plot(time, time2, data, data2, lim, aver, lim_time, index):
     #plt.savefig('/home/conpucter/Desktop/Term_paper/data/result/result_profile{}.png'.format(profile), transparent=False, dpi=500, bbox_inches="tight")
     plt.show()
     print(index)
-    
-def get_sav_data(file_name, name):
-    readed = scio.readsav(file_name, idict=None, python_dict=False, uncompressed_file_name=None, verbose=False)
-    return(readed['{}'.format(name)])
-
-
-def normalize_d(data):
-    dmax = np.max(data)
-    dmin = np.min(data)
-    data = (data - dmin)/(dmax - dmin)
-    return(data)
-
-
-def normalize_t(data, time):
-    max_pos = np.argwhere(data == np.max(data))
-    position = np.argwhere(data  >= 0.5)
-
-    time0 = time[int(max_pos[-1])]
-    time = (time - time0) /( time[int(position[-1])] - time0 )
-    
-    return(time)
-
-
-def cond_cool(t, size):
-    return((1 + t * size)**(-2/5))
-
-def rad_cool(t, alpha, size):
-    return((1 - alpha * t * size )**(-1/ alpha))
-
-def gen_cool(t, alpha, size_r, size_c, lim):
-
-    T = (1 + t * size_c)**(-2/5)
-    
-    if(T < lim):
-        return((1 - alpha * t * size_r )**(-1/ alpha))
-    
-    return(T)
-
-
-def gen_cool_t_search(t, size_c, lim):
-
-    T = (1 + t * size_c)**(-2/5)
-    
-    if(T < lim):
-        return(t)
 
 
 

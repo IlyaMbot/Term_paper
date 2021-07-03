@@ -7,13 +7,6 @@ from scipy.optimize import curve_fit as cv
 import os, glob
 
 
-def file_read_column(path, number):
-
-    df = pd.read_table(path, header = None, names = ["time", "data"], sep = r"\s+" )
-    df = df.sort_values(by = "time")
-    data = df.iloc[:,number]
-    return(data.to_numpy())
-
 
 def general_plot(time, time2, data, data2, aver, index):
     lsize = 20
@@ -51,43 +44,6 @@ def general_plot(time, time2, data, data2, aver, index):
     #plt.savefig('/home/conpucter/Desktop/Term_paper/data/result/result_profile{}.png'.format(index), transparent=False, dpi=500, bbox_inches="tight")
     plt.show()
     print(index)
-    
-
-def normalize_d(data):
-    dmax = np.max(data)
-    dmin = data[0]
-    data = (data - dmin)/(dmax - dmin)
-    return(data)
-
-
-def normalize_t(data, time):
-    max_pos = np.argwhere(data == np.max(data))
-    position = np.argwhere(data  >= 0.5)
-
-    time0 = time[int(max_pos[-1])]
-    time = (time - time0) /( time[int(position[-1])] - time0 )
-    
-    return(time)
-
-
-
-def exp_mod(t, sigma):    
-    return( np.exp(( -(t)**2 )/ sigma) )
-
-def parab_mod(t, alpha):
-    global size_c
-    tp = np.sqrt(size_c * np.log(2))
-    return( 0.5 * (1 - (t - tp)/alpha)**(2) )
-
-def Ash_mod(t, sigma, alpha):
-    
-    T = np.exp(( -(t)**2 )/ sigma)
-    tp = np.sqrt(sigma * np.log(2))
-
-    if( T <= 0.5 and t >= 0):
-        return(np.float( 0.5 * (1 - (t - tp)/alpha)**(2)))
-   
-    return(np.float(T))
 
 
 def aver_sq(data, time):

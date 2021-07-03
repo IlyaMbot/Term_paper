@@ -12,7 +12,7 @@ def file_read_column(path, number):
 
     df = pd.read_table(path, header = None, names = ["time", "data"], sep = r"\s+" )
     df = df.sort_values(by = "time")
-    data = df.iloc[:,number]
+    data = df.iloc[:, number]
     return(data.to_numpy())
 
 
